@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bold Blind Choice - Premium Decision Helper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000428, #004e92);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--light);
+            perspective: 1000px;
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #f72585, #4cc9f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(76, 201, 240, 0.3);
+            transform-style: preserve-3d;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .disclaimer {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateZ(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .disclaimer h2 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .disclaimer p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        .decision-container {
+            width: 100%;
+            position: relative;
+            margin: 2rem 0;
+            transform-style: preserve-3d;
+        }
+
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .choice-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.3),
+                rgba(255, 255, 255, 0)
+            );
+            transform: rotate(30deg);
+            transition: all 0.5s ease;
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-10px) scale(1.05) rotateY(10deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent);
+        }
+
+        .choice-btn:hover::before {
+            transform: rotate(30deg) translate(10%, 10%);
+        }
+
+        .prompt {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        #generate-btn {
+            background: linear-gradient(45deg, var(--accent), var(--primary));
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(247, 37, 133, 0.3);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            margin-bottom: 3rem;
+        }
+
+        #generate-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        #generate-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(247, 37, 133, 0.4);
+        }
+
+        #generate-btn:hover::after {
+            transform: translateX(100%);
+        }
+
+        #generate-btn:disabled {
+            opacity: 0.7;
+            transform: none !important;
+            cursor: not-allowed;
+        }
+
+        #result-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 2rem auto;
+            perspective: 1000px;
+        }
+
+        #result {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            font-size: 5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: var(--success);
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: rotateX(90deg) scale(0.5);
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent);
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            .choices {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1rem;
+            }
+        }
+
+        /* 3D Floating Animation */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotateY(0);
+            }
+            50% {
+                transform: translateY(-20px) rotateY(5deg);
+            }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="container">
+        <h1 class="logo floating">Bold Blind Choice</h1>
+        <p class="tagline">When in doubt, let fate decide</p>
+
+        <div class="disclaimer">
+            <h2>Disclaimer</h2>
+            <p>This is an entertainment tool only. Results are randomly generated and should not be used for important life decisions. The creators are not responsible for any choices made based on this tool. Always use your own judgment.</p>
+        </div>
+
+        <div class="decision-container">
+            <div class="choices">
+                <button class="choice-btn" disabled>1</button>
+                <button class="choice-btn" disabled>2</button>
+            </div>
+
+            <p class="prompt">Visualize both options carefully...</p>
+
+            <button id="generate-btn" onclick="generateChoice()">Get your choice</button>
+            
+            <div id="result-container">
+                <div id="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Particles.js initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup particles
+            const particlesConfig = {
+                particles: {
+                    number: { value: 80, density: { enable: true, value_area: 800 } },
+                    color: { value: "#4cc9f0" },
+                    shape: { type: "circle" },
+                    opacity: { value: 0.5, random: true },
+                    size: { value: 3, random: true },
+                    line_linked: { enable: true, distance: 150, color: "#4cc9f0", opacity: 0.4, width: 1 },
+                    move: { enable: true, speed: 2, direction: "none", random: true, straight: false, out_mode: "out" }
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: { enable: true, mode: "repulse" },
+                        onclick: { enable: true, mode: "push" }
+                    }
+                }
+            };
+
+            // Only initialize particles if container exists
+            if (document.getElementById('particles-js')) {
+                particlesJS('particles-js', particlesConfig);
+            }
+
+            // Initial animations
+            gsap.from('.logo', { 
+                duration: 1.5, 
+                y: -50, 
+                opacity: 0, 
+                ease: "elastic.out(1, 0.5)" 
+            });
+            
+            gsap.from('.tagline', { 
+                duration: 1, 
+                delay: 0.5, 
+                opacity: 0, 
+                y: 20, 
+                ease: "power3.out" 
+            });
+            
+            gsap.from('.disclaimer', { 
+                duration: 1, 
+                delay: 0.8, 
+                opacity: 0, 
+                y: 20, 
+                ease: "power3.out" 
+            });
+            
+            gsap.from('.choice-btn', { 
+                duration: 1, 
+                delay: 1, 
+                opacity: 0, 
+                y: 30, 
+                stagger: 0.2, 
+                ease: "back.out(1.7)" 
+            });
+            
+            gsap.from('.prompt', { 
+                duration: 0.8, 
+                delay: 1.3, 
+                opacity: 0, 
+                y: 20, 
+                ease: "power2.out" 
+            });
+            
+            gsap.from('#generate-btn', { 
+                duration: 1, 
+                delay: 1.5, 
+                opacity: 0, 
+                y: 30, 
+                ease: "elastic.out(1, 0.5)" 
+            });
+        });
+
+        function generateChoice() {
+            const result = Math.random() < 0.5 ? 1 : 2;
+            const resultElement = document.getElementById('result');
+            const generateBtn = document.getElementById('generate-btn');
+            const resultContainer = document.getElementById('result-container');
+            
+            // Disable button during animation
+            generateBtn.disabled = true;
+            
+            // Create confetti elements
+            createConfetti();
+            
+            // Animate the reveal
+            gsap.to(resultElement, {
+                duration: 0.8,
+                opacity: 1,
+                scale: 1,
+                rotationX: 0,
+                ease: "elastic.out(1, 0.5)",
+                onStart: () => {
+                    resultElement.textContent = result;
+                }
+            });
+            
+            // Add pulsing animation to result
+            gsap.to(resultElement, {
+                duration: 2,
+                scale: 1.1,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+            
+            // Re-enable button after delay
+            setTimeout(() => {
+                generateBtn.disabled = false;
+            }, 3000);
+        }
+        
+        function createConfetti() {
+            const container = document.querySelector('.decision-container');
+            const colors = ['#f72585', '#4361ee', '#4cc9f0', '#7209b7', '#3a0ca3'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = -10 + 'px';
+                container.appendChild(confetti);
+                
+                const angle = Math.random() * 360;
+                const velocity = 5 + Math.random() * 10;
+                const spin = Math.random() * 10;
+                
+                gsap.to(confetti, {
+                    duration: 2 + Math.random() * 3,
+                    x: `+=${Math.cos(angle) * velocity * 10}`,
+                    y: `+=${Math.sin(angle) * velocity * 10 + 100}`,
+                    rotation: spin * 360,
+                    opacity: 1,
+                    ease: "power1.out",
+                    onComplete: () => {
+                        confetti.remove();
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
