@@ -1,2 +1,2 @@
-# davidvensilinr.github.io
+# choice selector
 choice selector(fun web)
